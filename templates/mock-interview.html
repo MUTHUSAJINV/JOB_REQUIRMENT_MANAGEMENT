@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Mock Interview | CareerPulse{% endblock %}
+{% block content %}
+<div style="background:var(--bg-gradient-header);padding:3rem 0 2rem;text-align:center;">
+ <div class="container">
+  <h1 style="font-size:2.5rem;font-weight:800;color:var(--text-main);">Mock <span style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Interview</span></h1>
+  <p style="color:var(--text-muted);margin-top:.5rem;">AI-powered practice interviews with instant scoring and personalized feedback.</p>
+ </div>
+</div>
+<div class="container" style="padding:2.5rem 0;">
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+  <div class="card">
+   <h3 style="color:#8b5cf6;margin-bottom:1.5rem;">Schedule New Interview</h3>
+   <form method="POST">
+    <input type="hidden" name="action" value="schedule">
+    <div class="form-group">
+     <label class="form-label">Category *</label>
+     <select name="category" class="form-control" id="mi-category" required>
+      {% for cat in categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+     </select>
+    </div>
+    <div class="form-group"><label class="form-label">Date *</label><input type="date" name="scheduled_date" class="form-control" id="mi-date" required></div>
+    <div class="form-group"><label class="form-label">Time *</label><input type="time" name="scheduled_time" class="form-control" id="mi-time" required></div>
+    <button type="submit" class="btn btn-primary" style="width:100%;" id="mi-schedule-btn">Schedule Interview</button>
+   </form>
+  </div>
+  <div class="card" style="background:rgba(139,92,246,.03);border-color:rgba(139,92,246,.2);">
+   <h3 style="color:#c4b5fd;margin-bottom:1.2rem;">How It Works</h3>
+   {% for step,desc in [('1. Schedule','Choose a category and preferred date/time.'),('2. Start','See 5 AI-generated interview questions.'),('3. Answer','Write detailed responses to each question.'),('4. Feedback','Get instant AI scoring and personalized tips.')] %}
+   <div style="display:flex;gap:1rem;margin-bottom:1rem;">
+    <div style="background:rgba(139,92,246,.2);border-radius:.6rem;padding:.3rem .7rem;font-weight:700;color:#a78bfa;font-size:.82rem;white-space:nowrap;flex-shrink:0;">{{ step }}</div>
+    <p style="color:var(--text-muted);font-size:.88rem;margin:0;padding-top:.1rem;">{{ desc }}</p>
+   </div>
+   {% endfor %}
+  </div>
+ </div>
+ {% if past_interviews %}
+ <div class="card">
+  <h3 style="color:var(--text-main);margin-bottom:1.5rem;">Your Interviews</h3>
+  {% for iv in past_interviews %}
+  <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.03);border:1px solid var(--bg-rgba-5);border-radius:.8rem;padding:1rem 1.2rem;margin-bottom:.8rem;flex-wrap:wrap;gap:.8rem;">
+   <div>
+    <span style="color:var(--text-main);font-weight:600;">{{ iv.category }}</span>
+    <span style="color:var(--text-muted);font-size:.82rem;margin-left:.8rem;">{{ iv.scheduled_date }} {{ iv.scheduled_time }}</span>
+    <div style="margin-top:.3rem;">
+     {% if iv.status=='Completed' %}<span class="badge badge-success">Completed</span>{% else %}<span class="badge">Scheduled</span>{% endif %}
+    </div>
+    {% if iv.feedback %}<div style="color:var(--text-muted);font-size:.82rem;margin-top:.3rem;">{{ iv.feedback }}</div>{% endif %}
+   </div>
+   <div style="display:flex;align-items:center;gap:1rem;">
+    {% if iv.score is not none %}<span style="color:#a78bfa;font-size:1.1rem;font-weight:700;">{{ iv.score }}%</span>{% endif %}
+    {% if iv.status != 'Completed' %}
+    <a href="{{ url_for('start_mock_interview',interview_id=iv.id) }}" class="btn btn-primary btn-sm">Start Now</a>
+    {% else %}
+    <a href="{{ url_for('start_mock_interview',interview_id=iv.id) }}" class="btn btn-outline btn-sm">Review</a>
+    {% endif %}
+   </div>
+  </div>
+  {% endfor %}
+ </div>
+ {% endif %}
+</div>
+{% endblock %}

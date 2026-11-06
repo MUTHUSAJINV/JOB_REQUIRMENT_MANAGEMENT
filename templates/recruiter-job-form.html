@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'edit' %}Edit Vacancy{% else %}Post New Job{% endif %} | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 860px;">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{% if mode == 'edit' %}Edit Job Listing{% else %}Publish New Job Opportunity{% endif %}</h1>
+      <p class="page-subtitle">Describe your open position to attract skilled applicants</p>
+    </div>
+    <a href="{{ url_for('recruiter_dashboard') }}" class="btn btn-secondary">
+      Back to Listings
+    </a>
+  </div>
+
+  <div class="card" style="padding: 2.2rem;">
+    <form action="{% if mode == 'edit' %}{{ url_for('edit_job', job_id=job.id) }}{% else %}{{ url_for('create_job') }}{% endif %}" method="POST">
+      
+      <div class="form-group">
+        <label class="form-label" for="title">Job Title / Role *</label>
+        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Senior Backend Engineer (Python / Go)" value="{{ job.title if job else '' }}" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="job_type">Employment Type</label>
+          <select id="job_type" name="job_type" class="form-control">
+            <option value="Full-time" {% if job and job.job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+            <option value="Part-time" {% if job and job.job_type == 'Part-time' %}selected{% endif %}>Part-time</option>
+            <option value="Contract" {% if job and job.job_type == 'Contract' %}selected{% endif %}>Contract</option>
+            <option value="Internship" {% if job and job.job_type == 'Internship' %}selected{% endif %}>Internship</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="location">Location</label>
+          <input type="text" id="location" name="location" class="form-control" placeholder="e.g. San Francisco, CA / Remote" value="{{ job.location if job else '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="salary">Compensation / Salary</label>
+          <input type="text" id="salary" name="salary" class="form-control" placeholder="e.g. $130,000 - $160,000 / yr" value="{{ job.salary if job else '' }}">
+        </div>
+      </div>
+
+      {% if mode == 'edit' %}
+        <div class="form-group">
+          <label class="form-label" for="status">Listing Status</label>
+          <select id="status" name="status" class="form-control">
+            <option value="Open" {% if job.status == 'Open' %}selected{% endif %}>Open (Accepting Applications)</option>
+            <option value="Closed" {% if job.status == 'Closed' %}selected{% endif %}>Closed (Hidden from public search)</option>
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label" for="skills">Required Skills / Keywords <small>(Comma-separated)</small></label>
+        <input type="text" id="skills" name="skills" class="form-control" placeholder="e.g. Python, Flask, React, PostgreSQL, Docker, AWS" value="{{ job.skills if job else '' }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Detailed Job Description *</label>
+        <textarea id="description" name="description" class="form-control" style="min-height: 160px;" placeholder="Provide an overview of the role, day-to-day challenges, and impact..." required>{{ job.description if job else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="requirements">Candidate Requirements & Qualifications</label>
+        <textarea id="requirements" name="requirements" class="form-control" style="min-height: 130px;" placeholder="List required years of experience, core technical stack, and education prerequisites...">{{ job.requirements if job else '' }}</textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+        <a href="{{ url_for('recruiter_dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-job-form-btn">
+          {% if mode == 'edit' %}Save Changes{% else %}Publish Vacancy{% endif %}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

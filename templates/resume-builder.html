@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Resume Builder | CareerPulse{% endblock %}
+{% block content %}
+<div style="background:var(--bg-gradient-header);padding:3rem 0 2rem;text-align:center;">
+ <div class="container">
+  <h1 style="font-size:2.5rem;font-weight:800;color:var(--text-main);">Professional <span style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Resume Builder</span></h1>
+  <p style="color:var(--text-muted);margin-top:.5rem;">Build, preview and download your resume in minutes.</p>
+ </div>
+</div>
+<div class="container" style="padding:2.5rem 0;">
+ <form method="POST" id="resume-builder-form">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+   <div style="display:flex;flex-direction:column;gap:1.5rem;">
+    <div class="card">
+     <h3 style="color:#10b981;margin-bottom:1.2rem;">Personal Information</h3>
+     <div class="form-group"><label class="form-label">Full Name *</label><input type="text" name="full_name" class="form-control" value="{{ saved_data.full_name if saved_data else (profile.name if profile else '') }}" required></div>
+     <div class="form-group"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" value="{{ saved_data.email if saved_data else (profile.email if profile else '') }}" required></div>
+     <div class="form-group"><label class="form-label">Phone</label><input type="text" name="phone" class="form-control" value="{{ saved_data.phone if saved_data else (profile.phone if profile else '') }}"></div>
+     <div class="form-group"><label class="form-label">Location</label><input type="text" name="location" class="form-control" value="{{ saved_data.location if saved_data else (profile.location if profile else '') }}"></div>
+     <div class="form-group"><label class="form-label">LinkedIn</label><input type="url" name="linkedin" class="form-control" value="{{ saved_data.linkedin if saved_data else (profile.linkedin if profile else '') }}" placeholder="https://linkedin.com/in/..."></div>
+     <div class="form-group"><label class="form-label">GitHub</label><input type="url" name="github" class="form-control" value="{{ saved_data.github if saved_data else (profile.github if profile else '') }}" placeholder="https://github.com/..."></div>
+    </div>
+    <div class="card">
+     <h3 style="color:#10b981;margin-bottom:1.2rem;">Education</h3>
+     <div class="form-group"><label class="form-label">Degree</label>
+      <select name="degree" class="form-control">
+       <option value="">-- Select Degree --</option>
+       {% for d in ['B.Tech / B.E.','B.Sc. / B.A.','M.Tech / M.E.','M.Sc. / M.A.','MBA','Ph.D.','Diploma','Other'] %}
+       <option value="{{ d }}" {% if (saved_data and saved_data.degree==d) or (profile and profile.degree==d) %}selected {% endif %}>{{ d }}</option>
+       {% endfor %}
+      </select>
+     </div>
+     <div class="form-group"><label class="form-label">College / University</label><input type="text" name="education" class="form-control" value="{{ saved_data.education if saved_data else (profile.education if profile else '') }}" placeholder="University Name, Year"></div>
+     <div class="form-group"><label class="form-label">Percentage / CGPA</label><input type="text" name="percentage" class="form-control" value="{{ saved_data.percentage if saved_data else (profile.degree_percentage|string if profile and profile.degree_percentage else '') }}" placeholder="e.g. 82% or 8.5 CGPA"></div>
+    </div>
+    <div class="card">
+     <h3 style="color:#10b981;margin-bottom:1.2rem;">Template Style</h3>
+     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem;">
+      {% for tid,tlabel,tcolor in [('modern','Modern','#6366f1'),('clean','Clean','#10b981'),('bold','Bold','#f59e0b')] %}
+      <label style="cursor:pointer;">
+       <input type="radio" name="template_id" value="{{ tid }}" {% if (saved_data and saved_data.template_id==tid) or (not saved_data and tid=='modern') %}checked {% endif %} style="display:none;" class="tpl-radio" data-color="{{ tcolor }}">
+       <div class="tpl-opt" data-id="{{ tid }}" style="border:2px solid {% if (saved_data and saved_data.template_id==tid) or (not saved_data and tid=='modern') %}{{ tcolor }}{% else %}rgba(255,255,255,.1){% endif %};border-radius:.8rem;padding:1rem;text-align:center;transition:all .2s;">
+        <div style="width:40px;height:50px;background:{{ tcolor }};border-radius:.3rem;margin:0 auto .6rem;opacity:.7;"></div>
+        <div style="color:var(--text-main);font-size:.85rem;font-weight:600;">{{ tlabel }}</div>
+       </div>
+      </label>
+      {% endfor %}
+     </div>
+    </div>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:1.5rem;">
+    <div class="card"><h3 style="color:#10b981;margin-bottom:1.2rem;">Career Objective</h3><textarea name="objective" class="form-control" rows="4" placeholder="Summarize your professional goals..." style="resize:vertical;">{{ saved_data.objective if saved_data else (profile.bio if profile else '') }}</textarea></div>
+    <div class="card"><h3 style="color:#10b981;margin-bottom:1.2rem;">Technical Skills</h3><textarea name="skills" class="form-control" rows="3" placeholder="Python, React, SQL, Docker..." style="resize:vertical;">{{ saved_data.skills if saved_data else (profile.skills if profile else '') }}</textarea></div>
+    <div class="card"><h3 style="color:#10b981;margin-bottom:1.2rem;">Work Experience</h3><textarea name="experience" class="form-control" rows="5" placeholder="Company | Role | Duration&#10;- Achievement" style="resize:vertical;">{{ saved_data.experience if saved_data else (profile.experience if profile else '') }}</textarea></div>
+    <div class="card"><h3 style="color:#10b981;margin-bottom:1.2rem;">Projects</h3><textarea name="projects" class="form-control" rows="4" placeholder="Project | Tech Stack&#10;- Description" style="resize:vertical;">{{ saved_data.projects if saved_data else '' }}</textarea></div>
+    <div class="card">
+     <h3 style="color:#10b981;margin-bottom:1rem;">Certifications</h3>
+     <textarea name="certifications" class="form-control" rows="3" placeholder="AWS Certified, Google ML..." style="resize:vertical;">{{ saved_data.certifications if saved_data else '' }}</textarea>
+     <h3 style="color:#10b981;margin:.8rem 0;">Achievements</h3>
+     <textarea name="achievements" class="form-control" rows="3" placeholder="Awards, publications..." style="resize:vertical;">{{ saved_data.achievements if saved_data else '' }}</textarea>
+    </div>
+   </div>
+  </div>
+  <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:center;">
+   <button type="submit" class="btn btn-primary" style="min-width:200px;" id="resume-save-btn">Save Resume</button>
+   {% if saved_data %}<a href="{{ url_for('resume_builder_preview') }}" class="btn btn-outline" style="min-width:200px;" id="resume-preview-btn">Preview &amp; Download</a>{% endif %}
+  </div>
+ </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.tpl-radio').forEach(r=>{
+ r.addEventListener('change',()=>{
+  document.querySelectorAll('.tpl-opt').forEach(o=>o.style.borderColor='rgba(255,255,255,.1)');
+  const s=document.querySelector(.tpl-opt[data-id='']);
+  if(s)s.style.borderColor=r.dataset.color;
+ });
+});
+</script>
+{% endblock %}

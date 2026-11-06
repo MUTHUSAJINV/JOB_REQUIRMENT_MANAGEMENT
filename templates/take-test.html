@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}{{ test.title }} | CareerPulse{% endblock %}
+{% block content %}
+<div class="container" style="padding:2.5rem 0;max-width:800px;margin:0 auto;">
+ <a href="{{ url_for('coding_tests') }}" style="color:var(--text-muted);text-decoration:none;font-size:.9rem;">Back to Tests</a>
+ <h1 style="color:var(--text-main);font-size:2rem;font-weight:800;margin:.5rem 0;">{{ test.title }}</h1>
+ <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+  <span class="badge">{{ test.category }}</span>
+  <span class="badge">{{ test.time_limit }} min limit</span>
+  <span class="badge">{{ questions|length }} questions</span>
+ </div>
+ {% if result %}
+ <div class="card" style="text-align:center;padding:2rem;margin-bottom:2rem;border-left:4px solid {% if result.percentage>=70 %}#10b981{% elif result.percentage>=40 %}#f59e0b{% else %}#ef4444{% endif %};">
+  <h2 style="color:var(--text-main);font-size:2rem;font-weight:800;">{{ result.score }} / {{ result.total }}</h2>
+  <div style="font-size:1.3rem;font-weight:700;color:{% if result.percentage>=70 %}#34d399{% elif result.percentage>=40 %}#fbbf24{% else %}#f87171{% endif %};margin:.3rem 0;">{{ result.percentage }}%</div>
+  <p style="color:var(--text-muted);">{% if result.percentage>=70 %}Excellent! You passed.{% elif result.percentage>=40 %}Good effort! Review the answers below.{% else %}Keep practicing! Study the concepts.{% endif %}</p>
+  <div style="background:var(--bg-rgba-5);border-radius:1rem;height:10px;margin:1.5rem 0;overflow:hidden;">
+   <div style="background:{% if result.percentage>=70 %}#10b981{% elif result.percentage>=40 %}#f59e0b{% else %}#ef4444{% endif %};height:100%;width:{{ result.percentage }}%;border-radius:1rem;"></div>
+  </div>
+ </div>
+ {% for q in questions %}
+ {% set user_ans = result.answers.get(q.id|string,'') %}
+ {% set is_correct = user_ans.upper() == q.correct_option.upper() %}
+ <div class="card" style="margin-bottom:1rem;border-left:4px solid {% if is_correct %}#10b981{% else %}#ef4444{% endif %};">
+  <p style="color:var(--text-main);font-weight:500;margin-bottom:1rem;">{{ loop.index }}. {{ q.question }}</p>
+  {% for opt,label in [('A',q.option_a),('B',q.option_b),('C',q.option_c),('D',q.option_d)] %}
+  <div style="margin:.3rem 0;padding:.5rem .8rem;border-radius:.5rem;font-size:.9rem;background:{% if opt==q.correct_option.upper() %}rgba(16,185,129,.15){% elif opt==user_ans.upper() and not is_correct %}rgba(239,68,68,.1){% else %}transparent{% endif %};color:{% if opt==q.correct_option.upper() %}#34d399{% elif opt==user_ans.upper() and not is_correct %}#f87171{% else %}var(--text-muted){% endif %};">
+   <strong>{{ opt }}.</strong> {{ label }}{% if opt==q.correct_option.upper() %} &#x2713;{% elif opt==user_ans.upper() and not is_correct %} &#x2717;{% endif %}
+  </div>
+  {% endfor %}
+  {% if q.explanation %}<p style="color:var(--text-muted);font-size:.82rem;margin-top:.5rem;background:rgba(99,102,241,.08);border-radius:.4rem;padding:.4rem .7rem;">Hint: {{ q.explanation }}</p>{% endif %}
+ </div>
+ {% endfor %}
+ {% else %}
+ <form method="POST" id="test-form" onsubmit="return confirmSubmit()">
+  <div style="background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.3);border-radius:.8rem;padding:.8rem 1.2rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
+   <span style="color:#67e8f9;font-weight:600;">Time Remaining</span>
+   <span id="timer" style="color:var(--text-main);font-size:1.3rem;font-weight:800;">{{ test.time_limit }}:00</span>
+  </div>
+  {% for q in questions %}
+  <div class="card" style="margin-bottom:1rem;" id="q-{{ loop.index }}">
+   <p style="color:var(--text-main);font-weight:600;margin-bottom:1rem;">{{ loop.index }}. {{ q.question }}</p>
+   {% for opt,label in [('A',q.option_a),('B',q.option_b),('C',q.option_c),('D',q.option_d)] %}
+   <label style="display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;margin:.3rem 0;border-radius:.5rem;cursor:pointer;border:1px solid rgba(255,255,255,.06);transition:background .15s;" onmouseover="this.style.background='rgba(99,102,241,.1)'" onmouseout="this.style.background=''">
+    <input type="radio" name="q_{{ q.id }}" value="{{ opt }}" style="accent-color:#6366f1;">
+    <span style="color:var(--text-secondary);font-size:.92rem;"><strong style="color:#a5b4fc;">{{ opt }}.</strong> {{ label }}</span>
+   </label>
+   {% endfor %}
+  </div>
+  {% endfor %}
+  <div style="text-align:center;margin-top:1.5rem;">
+   <button type="submit" class="btn btn-primary" style="min-width:250px;font-size:1rem;" id="test-submit-btn">Submit Test</button>
+  </div>
+ </form>
+ {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+{% if not result %}
+var mins={{ test.time_limit }},secs=0,el=document.getElementById('timer');
+var iv=setInterval(function(){
+ if(secs===0){if(mins===0){clearInterval(iv);document.getElementById('test-form').submit();return;}mins--;secs=59;}else{secs--;}
+ el.textContent=String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+ if(mins<5)el.style.color='#f87171';
+},1000);
+function confirmSubmit(){clearInterval(iv);return confirm('Submit test? Answers cannot be changed after submission.');}
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+import sys, base64, os
+
+# Each template is stored as base64 to avoid any escaping issues
+TEMPLATES = {}
+
+# internships.html
+TEMPLATES['internships.html'] = 'PCT1 extends "base.html" PCT1\nPCT1 block title PCT1Internships | CareerPulsePCT1 endblock PCT1\nPCT1 block content PCT1\n<div style="background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);padding:3rem 0 2rem;text-align:center;">\n  <div class="container">\n    <h1 style="color:#fff;font-size:2.5rem;font-weight:800;">Internship <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Opportunities</span></h1>\n    <p style="color:var(--text-muted);margin-top:.5rem;">Real-world experience. Build your career portfolio.</p>\n  </div>\n</div>\n<div class="container" style="padding:2.5rem 0;">\n  PCT1 if internships PCT1\n  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem;">\n    PCT1 for job in internships PCT1\n    <div class="card" style="border-left:4px solid #6366f1;transition:transform .2s;" onmouseover="this.style.transform='"'"'translateY(-4px)'"'"'" onmouseout="this.style.transform='"'"''"'"'">\n      <h3 style="color:#fff;margin-bottom:.3rem;">PCT2 job.title PCT3</h3>\n      <p style="color:#6366f1;font-weight:600;margin-bottom:.8rem;">PCT2 job.company_name or "Company" PCT3</p>\n      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;">\n        PCT1 if job.location PCT1<span class="badge">PCT2 job.location PCT3</span>PCT1 endif PCT1\n        PCT1 if job.internship_duration PCT1<span class="badge">PCT2 job.internship_duration PCT3</span>PCT1 endif PCT1\n        PCT1 if job.stipend PCT1<span class="badge badge-success">PCT2 job.stipend PCT3</span>PCT1 endif PCT1\n        <span class="badge">PCT2 job.total_vacancy or 1 PCT3 openings</span>\n      </div>\n      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1.2rem;">PCT2 job.description[:120] PCT3...</p>\n      <a href="PCT2 url_for("job_details", job_id=job.id) PCT3" class="btn btn-primary" style="width:100%;text-align:center;">View &amp; Apply</a>\n    </div>\n    PCT1 endfor PCT1\n  </div>\n  PCT1 else PCT1\n  <div class="card" style="text-align:center;padding:4rem;">\n    <div style="font-size:3rem;">?</div>\n    <h3 style="color:#fff;margin:1rem 0 .5rem;">No internships available</h3>\n    <a href="PCT2 url_for("jobs") PCT3" class="btn btn-primary" style="margin-top:1rem;">Browse All Jobs</a>\n  </div>\n  PCT1 endif PCT1\n</div>\nPCT1 endblock PCT1'
+
+T = r'c:\Users\SAJIN\OneDrive\Desktop\job\templates'
+for name, content in TEMPLATES.items():
+    content = content.replace('PCT1', '{%').replace('PCT3', '}}').replace('PCT2', '{{')
+    with open(os.path.join(T, name), 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f'Wrote {name}: {os.path.getsize(os.path.join(T,name))} bytes')
+print('Done.')

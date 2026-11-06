@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Console | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Company Banner & Header -->
+  <div class="card" style="padding: 1.75rem 2rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(21, 29, 48, 0.95), rgba(99, 102, 241, 0.12)); border: 1px solid rgba(99, 102, 241, 0.25);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+      <div style="display: flex; align-items: center; gap: 1.2rem;">
+        <div class="company-avatar" style="width: 58px; height: 58px; font-size: 1.5rem; border-radius: 14px;">
+          {{ company.company_name[:1] if company and company.company_name else 'R' }}
+        </div>
+        <div>
+          <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem;">
+            {{ company.company_name if company and company.company_name else 'Your Company Portal' }}
+          </h1>
+          <div style="font-size: 0.88rem; color: var(--text-muted); display: flex; gap: 0.8rem; align-items: center;">
+            <span>{{ company.industry or 'Hiring Organization' if company else 'Hiring Organization' }}</span>
+            {% if company and company.location %}
+              <span>&bull; {{ company.location }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('recruiter_company') }}" class="btn btn-secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          Edit Company Profile
+        </a>
+        <a href="{{ url_for('create_job') }}" class="btn btn-primary" id="recruiter-post-job-hero-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Post New Vacancy
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="grid-cols-4" style="margin-bottom: 2.5rem;">
+    <div class="stat-card" style="--stat-glow: rgba(99, 102, 241, 0.2);">
+      <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      </div>
+      <div>
+        <div class="stat-val">{{ total_jobs }}</div>
+        <div class="stat-label">Total Jobs Posted</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="--stat-glow: rgba(16, 185, 129, 0.2);">
+      <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+      </div>
+      <div>
+        <div class="stat-val">{{ open_jobs }}</div>
+        <div class="stat-label">Active / Open Roles</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="--stat-glow: rgba(6, 182, 212, 0.2);">
+      <div class="stat-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+      </div>
+      <div>
+        <div class="stat-val">{{ total_applicants }}</div>
+        <div class="stat-label">Total Candidate Inflow</div>
+      </div>
+    </div>
+
+    <div class="stat-card" style="--stat-glow: rgba(192, 132, 252, 0.2);">
+      <div class="stat-icon" style="background: rgba(192, 132, 252, 0.15); color: #c084fc;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      </div>
+      <div>
+        <div class="stat-val">
+          <a href="{{ url_for('recruiter_applicants') }}" style="color: #c084fc; text-decoration: underline; font-size: 1.3rem;">
+            Review &rarr;
+          </a>
+        </div>
+        <div class="stat-label">Candidate Pipeline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Management Table -->
+  <div class="page-header" style="margin-bottom: 1.25rem;">
+    <div>
+      <h2 class="page-title" style="font-size: 1.4rem;">Your Job Listings & Management</h2>
+      <p class="page-subtitle">Publish, edit, toggle open/close status, and review applicant rosters</p>
+    </div>
+  </div>
+
+  {% if jobs %}
+    <div class="table-responsive" style="margin-bottom: 3rem;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Job Role & Title</th>
+            <th>Type / Location</th>
+            <th>Status</th>
+            <th>Applicants</th>
+            <th>Posted Date</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in jobs %}
+            <tr>
+              <td>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 1rem;">
+                  <a href="{{ url_for('job_details', job_id=j.id) }}" style="color: var(--text-main);">{{ j.title }}</a>
+                </div>
+                <div style="font-size: 0.8rem; color: #34d399;">{{ j.salary or 'Competitive' }}</div>
+              </td>
+              <td>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">{{ j.location or 'Remote' }}</div>
+                <span class="badge badge-type" style="margin-top: 0.2rem;">{{ j.job_type }}</span>
+              </td>
+              <td>
+                <span class="badge {% if j.status == 'Open' %}badge-open{% else %}badge-closed{% endif %}">
+                  {{ j.status }}
+                </span>
+              </td>
+              <td>
+                <a href="{{ url_for('recruiter_applicants', job_id=j.id) }}" class="badge badge-applied" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                  {{ j.total_applicants }} Candidate{{ 's' if j.total_applicants != 1 else '' }}
+                </a>
+              </td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">
+                {{ j.created_at[:10] }}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.45rem; justify-content: flex-end; align-items: center;">
+                  <!-- View Applicants Button -->
+                  <a href="{{ url_for('recruiter_applicants', job_id=j.id) }}" class="btn btn-secondary btn-sm" title="View Applicants">
+                    Candidates ({{ j.total_applicants }})
+                  </a>
+
+                  <!-- Toggle Open / Close Status -->
+                  <form action="{{ url_for('toggle_job_status', job_id=j.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn {% if j.status == 'Open' %}btn-outline{% else %}btn-success{% endif %} btn-sm" title="Toggle Status">
+                      {% if j.status == 'Open' %}Close Job{% else %}Reopen{% endif %}
+                    </button>
+                  </form>
+
+                  <!-- Edit Job -->
+                  <a href="{{ url_for('edit_job', job_id=j.id) }}" class="btn btn-secondary btn-sm" title="Edit Job">
+                    Edit
+                  </a>
+
+                  <!-- Delete Job -->
+                  <form action="{{ url_for('delete_job_recruiter', job_id=j.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to permanently delete this job listing?');">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Job">
+                      ✕
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3.5rem 2rem; margin-bottom: 3rem;">
+      <h3 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.5rem;">No jobs posted yet</h3>
+      <p style="color: var(--text-muted); max-width: 450px; margin: 0 auto 1.5rem;">
+        Reach qualified candidates right away by creating your first job posting.
+      </p>
+      <a href="{{ url_for('create_job') }}" class="btn btn-primary">Post Your First Job</a>
+    </div>
+  {% endif %}
+
+  <!-- Recent Applicants Inflow -->
+  {% if recent_applicants %}
+    <div class="page-header" style="margin-bottom: 1.25rem;">
+      <div>
+        <h2 class="page-title" style="font-size: 1.3rem;">Recent Candidate Submissions</h2>
+        <p class="page-subtitle">Latest candidates who submitted an application to your openings</p>
+      </div>
+      <a href="{{ url_for('recruiter_applicants') }}" class="btn btn-secondary btn-sm">
+        View All Candidates Pipeline &rarr;
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Role Applied</th>
+            <th>Status</th>
+            <th>Applied At</th>
+            <th style="text-align: right;">Resume</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in recent_applicants %}
+            <tr>
+              <td>
+                <div style="font-weight: 600; color: var(--text-main);">{{ a.candidate_name }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ a.candidate_email }}</div>
+              </td>
+              <td style="color: var(--text-muted);">{{ a.job_title }}</td>
+              <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">{{ a.applied_at[:10] }}</td>
+              <td style="text-align: right;">
+                {% if a.resume %}
+                  <a href="{{ url_for('download_resume', filename=a.resume) }}" class="btn btn-outline btn-sm">
+                    Download Resume
+                  </a>
+                {% else %}
+                  <span style="color: var(--text-subtle); font-size: 0.8rem;">No file</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

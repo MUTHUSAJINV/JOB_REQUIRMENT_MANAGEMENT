@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Portal Authentication | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; padding-top: 4rem; padding-bottom: 5rem;">
+  <div class="card" style="padding: 2.4rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border-subtle);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="logo-icon" style="margin: 0 auto 1.25rem; width: 48px; height: 48px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+      </div>
+      <h1 class="page-title" style="font-size: 1.75rem;">Portal Login</h1>
+      <p class="page-subtitle" style="margin-top: 0.4rem;">
+        Authenticate with your credentials to access your candidate, recruiter, or admin workspace
+      </p>
+    </div>
+
+    <form action="{{ url_for('login') }}" method="POST">
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label" for="email">Account Email</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="name@domain.com" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+          <label class="form-label" for="password" style="margin-bottom: 0;">Password</label>
+        </div>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width: 100%; padding: 0.85rem; font-size: 1rem; margin-top: 0.75rem;">
+        Log In & Go to Portal &rarr;
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); font-size: 0.9rem; color: var(--text-muted);">
+      Don't have an account yet? 
+      <a href="{{ url_for('register') }}" style="color: var(--primary); font-weight: 600;">Create an account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

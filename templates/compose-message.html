@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Compose Message | CareerPulse{% endblock %}
+{% block content %}
+<div class="container" style="padding:2.5rem 0;max-width:680px;margin:0 auto;">
+ <a href="{{ url_for('messages') }}" style="color:var(--text-muted);text-decoration:none;">Back to Messages</a>
+ <h1 style="color:var(--text-main);font-size:2rem;font-weight:800;margin:.5rem 0;">Compose Message</h1>
+ <div class="card">
+  <form method="POST">
+   <div class="form-group"><label class="form-label">Recipient *</label>
+    <select name="receiver_id" class="form-control" id="msg-receiver" required>
+     <option value="">-- Select recipient --</option>
+     {% for r in recipients %}<option value="{{ r.id }}" {% if prefill_receiver==r.id|string %}selected {% endif %}>{{ r.name }} ({{ r.role|title }})</option>{% endfor %}
+    </select>
+   </div>
+   <div class="form-group"><label class="form-label">Subject</label><input type="text" name="subject" class="form-control" value="{{ prefill_subject }}" id="msg-subject"></div>
+   <div class="form-group"><label class="form-label">Message *</label><textarea name="body" class="form-control" rows="8" required id="msg-body" style="resize:vertical;"></textarea></div>
+   <div style="display:flex;gap:1rem;">
+    <button type="submit" class="btn btn-primary" style="flex:1;" id="msg-send-btn">Send Message</button>
+    <a href="{{ url_for('messages') }}" class="btn btn-outline">Cancel</a>
+   </div>
+  </form>
+ </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Smart Job Recommendations | CareerPulse{% endblock %}
+{% block content %}
+<div style="background:var(--bg-gradient-header);padding:3rem 0 2rem;text-align:center;">
+ <div class="container">
+  <h1 style="font-size:2.5rem;font-weight:800;color:var(--text-main);">Smart Job <span style="background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Recommendations</span></h1>
+  <p style="color:var(--text-muted);margin-top:.5rem;">AI-matched jobs based on your skills, experience and education.</p>
+ </div>
+</div>
+<div class="container" style="padding:2.5rem 0;">
+ {% if profile %}
+ <div class="card" style="margin-bottom:2rem;border-color:rgba(245,158,11,.2);">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+   <div><h3 style="color:var(--text-main);">Your Match Profile</h3><p style="color:var(--text-muted);font-size:.88rem;">Update profile to improve AI recommendations.</p></div>
+   <a href="{{ url_for('profile') }}" class="btn btn-outline btn-sm" id="recs-update-btn">Update Profile</a>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;">
+   {% if profile.skills %}<span class="badge" style="padding:.4rem .8rem;">Skills: {{ profile.skills[:60] }}</span>{% endif %}
+   {% if profile.experience_years %}<span class="badge" style="padding:.4rem .8rem;">{{ profile.experience_years }} yrs exp</span>{% endif %}
+   {% if profile.degree %}<span class="badge" style="padding:.4rem .8rem;">{{ profile.degree }}</span>{% endif %}
+   {% if profile.degree_percentage %}<span class="badge" style="padding:.4rem .8rem;">{{ profile.degree_percentage }}%</span>{% endif %}
+  </div>
+ </div>
+ {% endif %}
+ {% if recommendations %}
+ <h2 style="color:var(--text-main);margin-bottom:1.5rem;">{{ recommendations|length }} Jobs Matched For You</h2>
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.5rem;">
+  {% for rec in recommendations %}
+  {% set job = rec.job %}
+  <div class="card" style="border-left:4px solid {% if rec.score>=70 %}#10b981{% elif rec.score>=40 %}#f59e0b{% else %}#6366f1{% endif %};transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+    <h3 style="color:var(--text-main);font-size:1.05rem;">{{ job.title }}</h3>
+    <span style="background:{% if rec.score>=70 %}rgba(16,185,129,.15){% elif rec.score>=40 %}rgba(245,158,11,.15){% else %}rgba(99,102,241,.15){% endif %};color:{% if rec.score>=70 %}#34d399{% elif rec.score>=40 %}#fbbf24{% else %}#a5b4fc{% endif %};border-radius:1rem;padding:.2rem .7rem;font-size:.82rem;font-weight:700;white-space:nowrap;margin-left:.5rem;">{{ rec.score }}% match</span>
+   </div>
+   <p style="color:#6366f1;font-weight:600;font-size:.88rem;margin-bottom:.8rem;">{{ job.company_name or 'Company' }}</p>
+   <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem;">
+    {% if job.location %}<span class="badge">{{ job.location }}</span>{% endif %}
+    {% if job.job_type %}<span class="badge">{{ job.job_type }}</span>{% endif %}
+    {% if job.salary %}<span class="badge badge-success">{{ job.salary }}</span>{% endif %}
+    <span class="badge">{{ job.total_vacancy or 1 }} openings</span>
+   </div>
+   {% if job.skills %}<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem;">{% for sk in job.skills.split(',')[:5] %}<span class="skill-tag" style="font-size:.75rem;">{{ sk.strip() }}</span>{% endfor %}</div>{% endif %}
+   <a href="{{ url_for('job_details',job_id=job.id) }}" class="btn btn-primary" style="width:100%;text-align:center;" id="rec-view-{{ job.id }}">View &amp; Apply</a>
+  </div>
+  {% endfor %}
+ </div>
+ {% else %}
+ <div class="card" style="text-align:center;padding:4rem;">
+  <div style="font-size:3rem;margin-bottom:1rem;">&#x1F3AF;</div>
+  <h3 style="color:var(--text-main);">Complete your profile to get AI-matched jobs</h3>
+  <p style="color:var(--text-muted);margin:.5rem 0 1.5rem;">Add your skills, degree, and experience to enable smart recommendations.</p>
+  <a href="{{ url_for('profile') }}" class="btn btn-primary">Update Profile</a>
+ </div>
+ {% endif %}
+</div>
+{% endblock %}

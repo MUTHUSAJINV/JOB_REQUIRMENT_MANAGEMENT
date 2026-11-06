@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Coding Tests | CareerPulse{% endblock %}
+{% block content %}
+<div style="background:var(--bg-gradient-header);padding:3rem 0 2rem;text-align:center;">
+ <div class="container">
+  <h1 style="font-size:2.5rem;font-weight:800;color:var(--text-main);">Coding <span style="background:linear-gradient(135deg,#06b6d4,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Assessments</span></h1>
+  <p style="color:var(--text-muted);margin-top:.5rem;">Timed MCQ tests to benchmark your skills and impress recruiters.</p>
+ </div>
+</div>
+<div class="container" style="padding:2.5rem 0;">
+ {% if tests %}
+ <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem;">
+  {% for test in tests %}
+  {% set sub = sub_map.get(test.id) %}
+  <div class="card" style="border-left:4px solid {% if test.difficulty=='Easy' %}#10b981{% elif test.difficulty=='Medium' %}#f59e0b{% else %}#ef4444{% endif %};transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+    <h3 style="color:var(--text-main);font-size:1.1rem;">{{ test.title }}</h3>
+    <span class="badge" style="background:{% if test.difficulty=='Easy' %}rgba(16,185,129,.15){% elif test.difficulty=='Medium' %}rgba(245,158,11,.15){% else %}rgba(239,68,68,.15){% endif %};color:{% if test.difficulty=='Easy' %}#34d399{% elif test.difficulty=='Medium' %}#fbbf24{% else %}#f87171{% endif %};white-space:nowrap;">{{ test.difficulty }}</span>
+   </div>
+   <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:1rem;">{{ test.description or 'Test your knowledge.' }}</p>
+   <div style="display:flex;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap;">
+    <span class="badge">{{ test.category }}</span>
+    <span class="badge">{{ test.time_limit }} min</span>
+    {% if sub %}<span class="badge badge-success">Completed {{ sub.score }}/{{ sub.total_questions }}</span>{% endif %}
+   </div>
+   {% if sub %}
+   <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:.6rem;padding:.7rem;margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;"><span style="color:#6ee7b7;font-size:.88rem;">Your Score</span><span style="color:#34d399;font-weight:700;">{{ sub.score }}/{{ sub.total_questions }}</span></div>
+    <div style="background:var(--bg-rgba-5);border-radius:1rem;height:6px;margin-top:.5rem;overflow:hidden;"><div style="background:#10b981;height:100%;width:{{ (sub.score/sub.total_questions*100)|int }}%;border-radius:1rem;"></div></div>
+   </div>
+   <a href="{{ url_for('take_test',test_id=test.id) }}" class="btn btn-outline" style="width:100%;text-align:center;">Review Answers</a>
+   {% else %}
+   <a href="{{ url_for('take_test',test_id=test.id) }}" class="btn btn-primary" style="width:100%;text-align:center;" id="test-start-{{ test.id }}">Start Test</a>
+   {% endif %}
+  </div>
+  {% endfor %}
+ </div>
+ {% else %}
+ <div class="card" style="text-align:center;padding:4rem;">
+  <div style="font-size:3rem;margin-bottom:1rem;">&#x1F4BB;</div>
+  <h3 style="color:var(--text-main);">No coding tests available yet</h3>
+  <p style="color:var(--text-muted);margin:.5rem 0 1.5rem;">Tests are added regularly. Check back soon!</p>
+ </div>
+ {% endif %}
+</div>
+{% endblock %}

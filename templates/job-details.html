@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} at {{ job.company_name }} | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Back Breadcrumb -->
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('jobs') }}" style="color: var(--text-muted); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back to all jobs
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 2rem; align-items: start;">
+    
+    <!-- Left Column: Job Details & Apply Action -->
+    <div>
+      <div class="card" style="padding: 2.2rem; margin-bottom: 2rem;">
+        
+        <!-- Job Header -->
+        <div style="display: flex; gap: 1.25rem; align-items: flex-start; margin-bottom: 1.5rem;">
+          <div class="company-avatar" style="width: 64px; height: 64px; font-size: 1.6rem; border-radius: 16px;">
+            {{ job.company_name[:1] if job.company_name else 'C' }}
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); line-height: 1.25; margin-bottom: 0.3rem;">
+                  {{ job.title }}
+                </h1>
+                <div style="font-size: 1.1rem; color: var(--secondary); font-weight: 600;">
+                  {{ job.company_name or 'Confidential Hiring' }}
+                </div>
+              </div>
+              <span class="badge {% if job.status == 'Open' %}badge-open{% else %}badge-closed{% endif %}" style="font-size: 0.85rem; padding: 0.4rem 0.9rem;">
+                {{ job.status }}
+              </span>
+            </div>
+
+            <div class="job-info-chips" style="margin-top: 1rem;">
+              <span class="info-chip">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ job.location or 'Remote' }}
+              </span>
+              <span class="badge badge-type">{{ job.job_type or 'Full-time' }}</span>
+              {% if job.salary %}
+                <span class="info-chip" style="color: #34d399; font-weight: 700;">{{ job.salary }}</span>
+              {% endif %}
+              <span class="info-chip">Posted {{ job.created_at[:10] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Application Status / Prevent Duplicate Notice -->
+        {% if has_applied %}
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                  <span style="color: #38bdf8;">✓</span> You have already applied for this position
+                </div>
+                <div style="font-size: 0.88rem; color: var(--text-muted);">
+                  Application submitted on {{ application.applied_at[:10] }}. Duplicate applications are restricted.
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="badge badge-{{ application.status|lower }}">{{ application.status }}</span>
+                <a href="{{ url_for('seeker_dashboard') }}" class="btn btn-secondary btn-sm">
+                  View Tracker
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Job Description Body -->
+        <div style="margin-top: 1.5rem;">
+          <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem;">Role Overview</h3>
+          <div style="color: var(--text-muted); font-size: 0.96rem; line-height: 1.7; white-space: pre-line; margin-bottom: 2rem;">
+            {{ job.description }}
+          </div>
+
+          {% if job.requirements %}
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem;">Key Requirements & Qualifications</h3>
+            <div style="color: var(--text-muted); font-size: 0.96rem; line-height: 1.7; white-space: pre-line; margin-bottom: 2rem;">
+              {{ job.requirements }}
+            </div>
+          {% endif %}
+
+          {% if job.skills %}
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem;">Required Skills & Technologies</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2.5rem;">
+              {% for skill in job.skills.split(',') %}
+                <span style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); color: #c7d2fe; padding: 0.4rem 0.85rem; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 500;">
+                  {{ skill.strip() }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Application Action Section -->
+        <div id="apply-section" style="padding-top: 2rem; border-top: 1px solid var(--border-subtle);">
+          {% if has_applied %}
+            <div style="text-align: center; padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-sm);">
+              <span class="badge badge-applied" style="font-size: 0.9rem; padding: 0.4rem 1rem;">
+                Application Received - Under Review
+              </span>
+              <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.6rem;">
+                The recruiter has your submission. Monitor updates on your <a href="{{ url_for('seeker_dashboard') }}" style="color: var(--primary); text-decoration: underline;">Applicant Dashboard</a>.
+              </p>
+            </div>
+          {% elif session.get('role') == 'seeker' %}
+            <div class="card" style="background: rgba(16, 22, 38, 0.9); border: 1px solid var(--border-focus); padding: 1.75rem;">
+              <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Submit Application for {{ job.title }}</h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                Confirm your resume and include an optional note for the hiring team at {{ job.company_name }}.
+              </p>
+
+              <form action="{{ url_for('apply_job', job_id=job.id) }}" method="POST" enctype="multipart/form-data">
+                
+                <!-- Resume Source Selector -->
+                <div class="form-group">
+                  <label class="form-label">Resume Attachment</label>
+                  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    
+                    {% if seeker_profile and seeker_profile.resume %}
+                      <label style="display: flex; align-items: center; gap: 0.65rem; background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;">
+                        <input type="radio" name="resume_source" value="profile" checked style="accent-color: var(--primary);">
+                        <div>
+                          <div style="font-weight: 600; color: var(--text-main); font-size: 0.92rem;">Use Profile Resume</div>
+                          <div style="font-size: 0.78rem; color: #34d399;">📄 {{ seeker_profile.resume }}</div>
+                        </div>
+                      </label>
+                    {% endif %}
+
+                    <label style="display: flex; align-items: center; gap: 0.65rem; background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;">
+                      <input type="radio" name="resume_source" value="upload" {% if not seeker_profile or not seeker_profile.resume %}checked{% endif %} style="accent-color: var(--primary);">
+                      <div>
+                        <div style="font-weight: 600; color: var(--text-main); font-size: 0.92rem;">Upload a New Resume (PDF / DOCX)</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);">Provide a role-tailored resume document</div>
+                      </div>
+                    </label>
+
+                  </div>
+                </div>
+
+                <div class="form-group" id="customResumeWrap" style="{% if seeker_profile and seeker_profile.resume %}display: none;{% endif %}">
+                  <label class="form-label" for="custom_resume">Select Resume File (Max 10MB)</label>
+                  <input type="file" id="custom_resume" name="custom_resume" accept=".pdf,.doc,.docx" class="form-control">
+                  <div class="file-name-feedback" style="font-size: 0.8rem; color: #34d399; margin-top: 0.35rem; display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="cover_note">
+                    Cover Note / Message to Recruiter <small>(Optional)</small>
+                  </label>
+                  <textarea id="cover_note" name="cover_note" class="form-control" placeholder="Briefly highlight why your background is a strong fit for this position..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-application-btn" style="width: 100%;">
+                  Confirm & Submit Application
+                </button>
+              </form>
+            </div>
+          {% elif not session.get('user_id') %}
+            <div style="text-align: center; padding: 2rem; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <h3 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.5rem;">Interested in this role?</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Please log in or register as a Job Seeker to apply with your profile and resume.
+              </p>
+              <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <a href="{{ url_for('login') }}" class="btn btn-primary" id="login-to-apply-btn">Log In to Apply</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline" id="register-to-apply-btn">Create Seeker Account</a>
+              </div>
+            </div>
+          {% else %}
+            <div style="padding: 1.25rem; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-sm); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+              You are signed in as an <strong>{{ session.get('role') }}</strong>. Only Job Seeker accounts can submit job applications.
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Company Info & Similar Jobs -->
+    <div>
+      <!-- Company Overview Card -->
+      <div class="card" style="padding: 1.75rem; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-subtle);">
+          About the Employer
+        </h3>
+
+        <div style="display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1rem;">
+          <div class="company-avatar" style="width: 48px; height: 48px; border-radius: 12px;">
+            {{ job.company_name[:1] if job.company_name else 'C' }}
+          </div>
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">
+              {{ job.company_name or 'Hiring Company' }}
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              {{ job.company_industry or 'Technology & Software' }}
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.25rem;">
+          {{ job.company_description or 'No company description provided.' }}
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.85rem;">
+          {% if job.company_location %}
+            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span>{{ job.company_location }}</span>
+            </div>
+          {% endif %}
+          {% if job.website %}
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+              <a href="{{ job.website }}" target="_blank" rel="noopener" style="color: var(--secondary); text-decoration: underline;">
+                Visit Company Website
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Other Jobs -->
+      {% if similar_jobs %}
+        <div class="card" style="padding: 1.75rem;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">
+            Other Opportunities
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for sjob in similar_jobs %}
+              <div style="padding-bottom: 0.9rem; border-bottom: 1px solid rgba(0, 0, 0, 0.03);">
+                <a href="{{ url_for('job_details', job_id=sjob.id) }}" style="font-weight: 600; color: var(--text-main); font-size: 0.92rem; display: block; margin-bottom: 0.2rem;">
+                  {{ sjob.title }}
+                </a>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                  <span>{{ sjob.company_name }}</span>
+                  <span style="color: #34d399;">{{ sjob.salary or 'Open' }}</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

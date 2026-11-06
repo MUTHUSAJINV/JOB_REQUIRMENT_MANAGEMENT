@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}AI Resume Analyzer & Job Matcher | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: var(--radius-full); padding: 0.35rem 0.85rem; font-size: 0.82rem; color: #a5b4fc; font-weight: 600; margin-bottom: 0.6rem;">
+        <span>✨</span> AI Neural Talent Intelligence
+      </div>
+      <h1 class="page-title">AI Resume Analyzer & Job Matcher</h1>
+      <p class="page-subtitle">Inspect your ATS compliance score, extracted competencies, and discover open vacancies tailored specifically to your resume</p>
+    </div>
+    <a href="{{ url_for('seeker_dashboard') }}" class="btn btn-secondary">
+      Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Resume Input Box -->
+  <div class="card" style="padding: 2rem; margin-bottom: 2.5rem; border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: var(--shadow-md);">
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      Select Resume to Analyze
+    </h2>
+
+    <form action="{{ url_for('resume_analyzer') }}" method="POST" enctype="multipart/form-data">
+      
+      <!-- Source Radios -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        
+        <!-- Profile Resume Option -->
+        <label style="display: flex; align-items: flex-start; gap: 0.75rem; background: var(--bg-surface); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;">
+          <input type="radio" name="source" value="profile" {% if not resume_source or (profile and profile.resume and resume_source == profile.resume) %}checked{% endif %} style="margin-top: 0.2rem; accent-color: var(--primary);">
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">Active Profile Resume</div>
+            {% if profile and profile.resume %}
+              <div style="font-size: 0.8rem; color: #34d399; margin-top: 0.2rem;">📄 {{ profile.resume }}</div>
+            {% else %}
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">No profile resume uploaded yet</div>
+            {% endif %}
+          </div>
+        </label>
+
+        <!-- Upload New File Option -->
+        <label style="display: flex; align-items: flex-start; gap: 0.75rem; background: var(--bg-surface); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;">
+          <input type="radio" name="source" value="upload" {% if not profile or not profile.resume %}checked{% endif %} style="margin-top: 0.2rem; accent-color: var(--primary);">
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">Upload New Document</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">Supports PDF, DOCX, or TXT</div>
+          </div>
+        </label>
+
+        <!-- Paste Text Option -->
+        <label style="display: flex; align-items: flex-start; gap: 0.75rem; background: var(--bg-surface); padding: 1.1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); cursor: pointer;">
+          <input type="radio" name="source" value="text" style="margin-top: 0.2rem; accent-color: var(--primary);">
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">Paste Raw Resume Text</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">Analyze copy-pasted bio & skills</div>
+          </div>
+        </label>
+
+      </div>
+
+      <!-- File upload input container -->
+      <div id="analyzerFileUpload" class="form-group" style="display: none; background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: var(--radius-sm); border: 1px dashed var(--border-focus);">
+        <label class="form-label" for="resume_file">Choose Resume File (PDF, DOCX, TXT - Max 10MB)</label>
+        <input type="file" id="resume_file" name="resume_file" accept=".pdf,.doc,.docx,.txt" class="form-control">
+      </div>
+
+      <!-- Text input container -->
+      <div id="analyzerTextInput" class="form-group" style="display: none;">
+        <label class="form-label" for="resume_text">Paste Plain Resume Content</label>
+        <textarea id="resume_text" name="resume_text" class="form-control" style="min-height: 120px;" placeholder="Paste your resume sections, job history, and technical skills here..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" id="run-analysis-btn" style="width: 100%;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        Analyse Resume & Match Required Jobs
+      </button>
+
+    </form>
+  </div>
+
+  {% if analysis %}
+    <!-- ==============================================
+         AI ANALYSIS INSIGHTS & ATS SCORE
+         ============================================== -->
+    <div class="card" style="padding: 2.2rem; margin-bottom: 2.5rem; background: linear-gradient(135deg, rgba(21, 29, 48, 0.95), rgba(99, 102, 241, 0.12)); border: 1px solid rgba(99, 102, 241, 0.35);">
+      
+      <!-- Top Row: Score & Seniority -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); margin-bottom: 1.75rem;">
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+          
+          <!-- Radial-styled Score Badge -->
+          <div style="width: 76px; height: 76px; border-radius: 50%; background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.05) 70%); border: 3px solid #34d399; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(52, 211, 153, 0.35);">
+            <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); line-height: 1;">{{ analysis.ats_score }}</span>
+            <span style="font-size: 0.65rem; color: #34d399; font-weight: 700; text-transform: uppercase;">ATS Score</span>
+          </div>
+
+          <div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">
+              {% if analysis.ats_score >= 80 %}
+                Strong ATS Optimization & High Recruiter Readiness
+              {% elif analysis.ats_score >= 65 %}
+                Good Resume Baseline & Solid Structure
+              {% else %}
+                Needs Refinement for Optimal ATS Screening
+              {% endif %}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--secondary); font-weight: 600; margin-top: 0.2rem;">
+              Estimated Seniority: <span style="color: var(--text-main);">{{ analysis.experience_level }}</span>
+            </div>
+          </div>
+        </div>
+
+        {% if resume_source %}
+          <div style="background: rgba(0, 0, 0, 0.03); padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-muted);">
+            Source: <strong style="color: var(--text-main);">{{ resume_source }}</strong>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Skills Detected Grid -->
+      <div style="margin-bottom: 1.75rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between;">
+          <span>Detected Competencies & Keywords ({{ analysis.skills|length }})</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Identified via AI Keyword Ontology</span>
+        </h3>
+
+        {% if analysis.skills %}
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            {% for skill in analysis.skills %}
+              <span style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); color: #c7d2fe; padding: 0.35rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.86rem; font-weight: 600;">
+                ✓ {{ skill }}
+              </span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.9rem;">No recognized technical keywords were detected. Try adding explicit skill names.</p>
+        {% endif %}
+      </div>
+
+      <!-- Two-column Strengths & AI Improvement Tips -->
+      <div class="grid-cols-2">
+        <!-- Strengths -->
+        <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); padding: 1.25rem;">
+          <h4 style="font-size: 0.98rem; font-weight: 700; color: #34d399; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>🛡️</span> Resume Strengths
+          </h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.88rem; color: var(--text-muted);">
+            {% for str in analysis.strengths %}
+              <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                <span style="color: #34d399; font-weight: bold;">✓</span>
+                <span>{{ str }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Recommendations -->
+        <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-sm); padding: 1.25rem;">
+          <h4 style="font-size: 0.98rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>💡</span> AI Optimization Recommendations
+          </h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.88rem; color: var(--text-muted);">
+            {% for rec in analysis.recommendations %}
+              <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                <span style="color: #fbbf24; font-weight: bold;">&bull;</span>
+                <span>{{ rec }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==============================================
+         REQUIRED / MATCHED JOBS FOR YOUR RESUME
+         ============================================== -->
+    <div style="margin-top: 3.5rem;">
+      <div class="page-header" style="margin-bottom: 1.5rem;">
+        <div>
+          <h2 class="page-title" style="font-size: 1.6rem; display: flex; align-items: center; gap: 0.6rem;">
+            <span>🎯</span> Required Jobs for Your Resume
+          </h2>
+          <p class="page-subtitle">
+            Ranked positions matching your resume skills with highlighted matching & missing skills
+          </p>
+        </div>
+        <span class="badge badge-applied" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">
+          {{ matched_jobs|length }} Matches Found
+        </span>
+      </div>
+
+      {% if matched_jobs %}
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 4rem;">
+          {% for match in matched_jobs %}
+            {% set job = match.job %}
+            <div class="card card-hoverable" style="padding: 1.75rem; position: relative; border-left: 4px solid {{ match.fit_color }};">
+              
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap;">
+                
+                <!-- Left: Job Meta -->
+                <div style="flex: 1; min-width: 280px;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+                    <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--text-main);">
+                      <a href="{{ url_for('job_details', job_id=job.id) }}" style="color: var(--text-main);">{{ job.title }}</a>
+                    </h3>
+                  </div>
+
+                  <div style="font-size: 0.95rem; color: var(--secondary); font-weight: 600; margin-bottom: 0.6rem;">
+                    {{ job.company_name or 'Hiring Organization' }} &bull; 
+                    <span style="color: var(--text-muted); font-weight: normal;">{{ job.location or 'Remote' }}</span> &bull; 
+                    <span style="color: var(--text-muted); font-weight: normal;">{{ job.job_type }}</span>
+                  </div>
+
+                  {% if job.salary %}
+                    <div style="color: #34d399; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.75rem;">
+                      {{ job.salary }}
+                    </div>
+                  {% endif %}
+
+                  <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55; margin-bottom: 1.25rem;">
+                    {{ job.description[:180] }}...
+                  </p>
+
+                  <!-- Matched Skills vs Missing Skills Comparison -->
+                  <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    
+                    <!-- Matching Skills -->
+                    <div>
+                      <div style="font-size: 0.76rem; text-transform: uppercase; font-weight: 700; color: #34d399; letter-spacing: 0.04em; margin-bottom: 0.35rem;">
+                        ✓ Matched Skills on Your Resume ({{ match.matched_skills|length }})
+                      </div>
+                      {% if match.matched_skills %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                          {% for ms in match.matched_skills %}
+                            <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 4px;">
+                              {{ ms }}
+                            </span>
+                          {% endfor %}
+                        </div>
+                      {% else %}
+                        <span style="font-size: 0.8rem; color: var(--text-subtle);">Direct keyword overlap minimal</span>
+                      {% endif %}
+                    </div>
+
+                    <!-- Missing Skills Needed -->
+                    {% if match.missing_skills %}
+                      <div style="padding-top: 0.6rem; border-top: 1px solid rgba(0, 0, 0, 0.03);">
+                        <div style="font-size: 0.76rem; text-transform: uppercase; font-weight: 700; color: #fbbf24; letter-spacing: 0.04em; margin-bottom: 0.35rem;">
+                          ⚡ Skills Asked by Job (Consider Adding/Upskilling)
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                          {% for mis in match.missing_skills %}
+                            <span style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.25); color: #fde68a; font-size: 0.78rem; padding: 0.2rem 0.55rem; border-radius: 4px;">
+                              + {{ mis }}
+                            </span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+
+                  </div>
+
+                </div>
+
+                <!-- Right: Match Score Card & Apply Action -->
+                <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 1.25rem;">
+                  
+                  <div style="text-align: right;">
+                    <div style="font-size: 2.2rem; font-weight: 900; color: {{ match.fit_color }}; line-height: 1;">
+                      {{ match.match_score }}%
+                    </div>
+                    <span class="badge {{ match.fit_badge }}" style="margin-top: 0.25rem;">
+                      {{ match.fit_tier }}
+                    </span>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                    <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-primary" style="padding: 0.65rem 1.4rem;">
+                      Apply for this Job &rarr;
+                    </a>
+                    <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-outline btn-sm" style="text-align: center;">
+                      View Details
+                    </a>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 2rem;">
+          <p style="color: var(--text-muted);">No open jobs available for matching at this moment.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  {% endif %}
+
+</div>
+
+{% block scripts %}
+<script>
+  // Toggle file and text containers based on radio selector
+  document.querySelectorAll('input[name="source"]').forEach((radio) => {
+    radio.addEventListener('change', function() {
+      const fileBox = document.getElementById('analyzerFileUpload');
+      const textBox = document.getElementById('analyzerTextInput');
+      if (this.value === 'upload') {
+        fileBox.style.display = 'block';
+        textBox.style.display = 'none';
+      } else if (this.value === 'text') {
+        fileBox.style.display = 'none';
+        textBox.style.display = 'block';
+      } else {
+        fileBox.style.display = 'none';
+        textBox.style.display = 'none';
+      }
+    });
+  });
+
+  // Trigger correct initial state
+  const checkedSource = document.querySelector('input[name="source"]:checked');
+  if (checkedSource) {
+    checkedSource.dispatchEvent(new Event('change'));
+  }
+</script>
+{% endblock %}
+{% endblock %}

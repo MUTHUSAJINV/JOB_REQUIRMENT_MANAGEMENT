@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}View Message | CareerPulse{% endblock %}
+{% block content %}
+<div class="container" style="padding:2.5rem 0;max-width:720px;margin:0 auto;">
+ <a href="{{ url_for('messages') }}" style="color:var(--text-muted);text-decoration:none;font-size:.9rem;">Back to Messages</a>
+ <div class="card" style="margin-top:1.5rem;">
+  <div style="border-bottom:1px solid var(--bg-rgba-5);padding-bottom:1.2rem;margin-bottom:1.5rem;">
+   <h2 style="color:var(--text-main);font-size:1.4rem;margin-bottom:.8rem;">{{ msg.subject or '(No Subject)' }}</h2>
+   <div style="color:var(--text-muted);font-size:.88rem;">From: <strong style="color:#a5b4fc;">{{ msg.sender_name }}</strong> &lt;{{ msg.sender_email }}&gt;</div>
+   <div style="color:var(--text-muted);font-size:.88rem;">To: <strong style="color:#a5b4fc;">{{ msg.receiver_name }}</strong></div>
+   <div style="color:var(--text-muted);font-size:.82rem;margin-top:.3rem;">{{ msg.sent_at[:16] }}</div>
+  </div>
+  <div style="color:var(--text-secondary);line-height:1.8;white-space:pre-wrap;">{{ msg.body }}</div>
+  <div style="margin-top:2rem;padding-top:1.2rem;border-top:1px solid var(--bg-rgba-5);display:flex;gap:1rem;">
+   <a href="{{ url_for('compose_message') }}?to={{ msg.sender_id }}&subject=Re: {{ msg.subject or '' }}" class="btn btn-primary" id="msg-reply-btn">Reply</a>
+   <a href="{{ url_for('messages') }}" class="btn btn-outline">Back</a>
+  </div>
+ </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Open Positions | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Explore Career Opportunities</h1>
+      <p class="page-subtitle">Showing {{ jobs|length }} active positions matching your criteria</p>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <form action="{{ url_for('jobs') }}" method="GET" class="card" style="margin-bottom: 2.5rem; padding: 1.25rem;">
+    <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap: 0.85rem; align-items: flex-end;">
+      
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Keyword / Role / Skills</label>
+        <input type="text" name="keyword" value="{{ keyword }}" class="form-control" placeholder="e.g. Python, Frontend, Engineer" id="filter-keyword">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Location</label>
+        <input type="text" name="location" value="{{ location }}" class="form-control" placeholder="e.g. San Francisco, Remote" id="filter-location">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Job Type</label>
+        <select name="job_type" class="form-control" id="filter-job-type">
+          <option value="">All Types</option>
+          <option value="Full-time" {% if job_type == 'Full-time' %}selected{% endif %}>Full-time</option>
+          <option value="Contract" {% if job_type == 'Contract' %}selected{% endif %}>Contract</option>
+          <option value="Internship" {% if job_type == 'Internship' %}selected{% endif %}>Internship</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Salary</label>
+        <input type="text" name="salary_filter" value="{{ salary_filter }}" class="form-control" placeholder="e.g. 150,000" id="filter-salary">
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary" id="filter-apply-btn" style="height: 42px;">
+          Filter
+        </button>
+        {% if keyword or location or job_type or salary_filter %}
+          <a href="{{ url_for('jobs') }}" class="btn btn-secondary" style="height: 42px;" title="Reset filters">
+            ✕
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <!-- Job Cards List -->
+  {% if jobs %}
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+      {% for job in jobs %}
+        <div class="job-card" style="padding: 1.6rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap;">
+            
+            <div style="display: flex; gap: 1.2rem; align-items: flex-start;">
+              <div class="company-avatar" style="width: 56px; height: 56px; font-size: 1.35rem;">
+                {{ job.company_name[:1] if job.company_name else 'C' }}
+              </div>
+              <div>
+                <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem;">
+                  <a href="{{ url_for('job_details', job_id=job.id) }}" style="color: var(--text-main);">{{ job.title }}</a>
+                </h2>
+                <div style="color: var(--secondary); font-weight: 600; font-size: 0.95rem; margin-bottom: 0.6rem;">
+                  {{ job.company_name or 'Confidential Hiring' }}
+                </div>
+
+                <div class="job-info-chips" style="margin: 0.4rem 0 0.9rem;">
+                  <span class="info-chip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    {{ job.location or 'Remote' }}
+                  </span>
+                  <span class="badge badge-type">{{ job.job_type or 'Full-time' }}</span>
+                  <span class="badge badge-open">Open</span>
+                  {% if job.salary %}
+                    <span class="info-chip" style="color: #34d399; font-weight: 600;">{{ job.salary }}</span>
+                  {% endif %}
+                </div>
+
+                <p style="color: var(--text-muted); font-size: 0.92rem; max-width: 780px; line-height: 1.55;">
+                  {{ job.description[:220] }}{% if job.description|length > 220 %}...{% endif %}
+                </p>
+
+                {% if job.skills %}
+                  <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem;">
+                    {% for skill in job.skills.split(',') %}
+                      <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); color: #a5b4fc; padding: 0.2rem 0.55rem; border-radius: 4px;">
+                        {{ skill.strip() }}
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 1rem; align-self: stretch;">
+              <span style="font-size: 0.8rem; color: var(--text-subtle);">
+                Posted {{ job.created_at[:10] }}
+              </span>
+              <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-primary" id="view-job-{{ job.id }}-btn">
+                View & Apply
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+      <h3 style="font-size: 1.35rem; margin-bottom: 0.5rem; color: var(--text-main);">No matching jobs found</h3>
+      <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem;">
+        We couldn't find any job postings matching your current search parameters. Try clearing some filters or searching for another keyword.
+      </p>
+      <a href="{{ url_for('jobs') }}" class="btn btn-secondary">Clear All Filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}CareerPulse | Find Your Dream Role & Hire Top Talent
+
+
+{% endblock %}
+
+{% block content %}
+<style>
+/* Front Page Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.anim-fade-up { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.anim-fade-down { opacity: 0; animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.anim-scale-up { opacity: 0; animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.anim-float { animation: float 4s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* Scroll Animation Classes */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+</style>
+
+
+
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-pill anim-fade-down">
+      <span style="font-size: 1rem;">✨</span>
+      <span>AI-Powered Resume Analysis & Precision Job Matching</span>
+    </div>
+
+    <h1 class="hero-title anim-fade-up delay-100">
+      Unlock Your Next Career Milestone <br>
+      <span class="brand-accent">With Precision & Speed</span>
+    </h1>
+
+    <p class="hero-subtitle anim-fade-up delay-200">
+      Connect directly with verified employers, analyze your resume against live job vacancies, and track your hiring pipeline in real time.
+    </p>
+
+    <!-- Hero Search Bar -->
+    <form action="{{ url_for('jobs') }}" method="GET" class="search-box anim-fade-up delay-300" style="max-width: 900px; margin: 0 auto 2.5rem;">
+      <div class="search-input-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" name="keyword" placeholder="Job title, keywords, or skills..." id="hero-keyword">
+      </div>
+
+      <div class="search-divider"></div>
+
+      <div class="search-input-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-muted);"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <input type="text" name="location" placeholder="Location or 'Remote'..." id="hero-location">
+      </div>
+
+      <div class="search-divider"></div>
+
+      <div class="search-input-wrap" style="flex: 0.8;">
+        <select name="job_type" id="hero-job-type">
+          <option value="">All Job Types</option>
+          <option value="Full-time">Full-time</option>
+          <option value="Contract">Contract</option>
+          <option value="Internship">Internship</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="hero-search-btn" style="padding: 0.8rem 1.6rem;">
+        Search Jobs
+      </button>
+    </form>
+
+    <!-- AI Analyzer Spotlight Banner -->
+    <div class="anim-scale-up delay-400" style="max-width: 900px; margin: 0 auto 3rem; background:var(--bg-gradient-hero); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: var(--radius-md); padding: 1.4rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; text-align: left; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 1.2rem;">
+        <div style="width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #06b6d4); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);">
+          ⚡
+        </div>
+        <div>
+          <div style="font-weight: 700; color: var(--text-main); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>AI Resume Analyzer & Vacancy Matcher</span>
+            <span style="font-size: 0.72rem; background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase;">New Feature</span>
+          </div>
+          <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Upload or select your resume to get instant ATS scoring, skills gap breakdown, and ranked required jobs matching your profile.
+          </div>
+        </div>
+      </div>
+      <a href="{{ url_for('resume_analyzer') }}" class="btn btn-primary" style="white-space: nowrap;">
+        Analyse Resume Now &rarr;
+      </a>
+    </div>
+
+    <!-- Platform Stats -->
+    <div class="grid-cols-4" style="max-width: 1040px; margin: 0 auto;">
+      <div class="stat-card anim-fade-up delay-300 anim-float" style="--stat-glow: rgba(99, 102, 241, 0.2);">
+        <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        </div>
+        <div>
+          <div class="stat-val">{{ stats.jobs }}</div>
+          <div class="stat-label">Active Open Positions</div>
+        </div>
+      </div>
+
+      <div class="stat-card anim-fade-up delay-400 anim-float" style="--stat-glow: rgba(6, 182, 212, 0.2); animation-delay: 400ms, 200ms;">
+        <div class="stat-icon" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </div>
+        <div>
+          <div class="stat-val">{{ stats.companies }}</div>
+          <div class="stat-label">Verified Employers</div>
+        </div>
+      </div>
+
+      <div class="stat-card anim-fade-up delay-500 anim-float" style="--stat-glow: rgba(168, 85, 247, 0.2); animation-delay: 500ms, 400ms;">
+        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div>
+          <div class="stat-val">{{ stats.seekers }}</div>
+          <div class="stat-label">Active Candidates</div>
+        </div>
+      </div>
+
+      <div class="stat-card anim-fade-up delay-600 anim-float" style="--stat-glow: rgba(16, 185, 129, 0.2); animation-delay: 600ms, 600ms;">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <div>
+          <div class="stat-val">{{ stats.placements }}</div>
+          <div class="stat-label">Candidate Placements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Jobs Section -->
+<section style="padding: 2rem 0 4rem;">
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h2 class="page-title anim-fade-up">Featured Opportunities</h2>
+        <p class="page-subtitle anim-fade-up delay-100">Hand-picked openings from forward-thinking engineering and product teams</p>
+      </div>
+      <a href="{{ url_for('jobs') }}" class="btn btn-secondary" id="view-all-jobs-btn">
+        View All Jobs
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="grid-cols-3">
+      {% for job in jobs %}
+        <div class="job-card anim-fade-up delay-200">
+          <div>
+            <div class="job-card-top">
+              <div class="company-avatar">
+                {{ job.company_name[:1] if job.company_name else 'C' }}
+              </div>
+              <div>
+                <h3 class="job-meta-title">
+                  <a href="{{ url_for('job_details', job_id=job.id) }}">{{ job.title }}</a>
+                </h3>
+                <div class="job-meta-company">{{ job.company_name or 'Confidential Hiring' }}</div>
+              </div>
+            </div>
+
+            <div class="job-info-chips">
+              <span class="info-chip">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ job.location or 'Remote' }}
+              </span>
+              <span class="badge badge-type">{{ job.job_type or 'Full-time' }}</span>
+              {% if job.skills %}
+                <span class="info-chip">{{ job.skills.split(',')[0] }}</span>
+              {% endif %}
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.25rem;">
+              {{ job.description[:110] }}...
+            </p>
+          </div>
+
+          <div class="job-card-bottom">
+            <span class="job-salary-tag">{{ job.salary or 'Competitive' }}</span>
+            <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-outline btn-sm">
+              View Details
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Role Capabilities Grid -->
+<section style="background: var(--bg-surface); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); padding: 4.5rem 0;">
+  <div class="container">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 3rem;">
+      <h2 class="page-title anim-fade-up" style="font-size: 2.2rem; margin-bottom: 0.6rem;">Tailored for Every Stakeholder</h2>
+      <p class="page-subtitle anim-fade-up delay-100">A seamless platform crafted for Candidates, Recruiters, and Admins alike</p>
+    </div>
+
+    <div class="grid-cols-3">
+      <!-- Seeker Box -->
+      <div class="card anim-fade-up delay-300" style="border-top: 3px solid #38bdf8;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.6rem; color: var(--text-main);">For Job Seekers</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.7rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #38bdf8;">✓</span> <strong>AI Resume Analyzer & Job Matching</strong></li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #38bdf8;">✓</span> Profile management & resume upload</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #38bdf8;">✓</span> Smart keyword & location filters</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #38bdf8;">✓</span> 1-Click apply with duplicate protection</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #38bdf8;">✓</span> Live application status & interview tracking</li>
+        </ul>
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="{{ url_for('register') }}" class="btn btn-outline btn-sm" style="flex: 1;">Register</a>
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm" style="flex: 1;">Login</a>
+        </div>
+      </div>
+
+      <!-- Recruiter Box -->
+      <div class="card anim-fade-up delay-400" style="border-top: 3px solid #c084fc;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(192, 132, 252, 0.15); color: #c084fc; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        </div>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.6rem; color: var(--text-main);">For Recruiters</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.7rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #c084fc;">✓</span> Company profile setup & branding</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #c084fc;">✓</span> Post, edit & close vacancy listings</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #c084fc;">✓</span> Candidate review & resume downloads</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #c084fc;">✓</span> Status transitions (Shortlist, Interview, Select, Reject)</li>
+        </ul>
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="{{ url_for('register') }}" class="btn btn-outline btn-sm" style="flex: 1;">Employer Sign Up</a>
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm" style="flex: 1;">Employer Login</a>
+        </div>
+      </div>
+
+      <!-- Admin Box -->
+      <div class="card anim-fade-up delay-500" style="border-top: 3px solid #fbbf24;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(251, 191, 36, 0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.6rem; color: var(--text-main);">For Platform Admin</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.7rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #fbbf24;">✓</span> Comprehensive user & job statistics</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #fbbf24;">✓</span> Application pipeline metrics & breakdown</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #fbbf24;">✓</span> User management & account control</li>
+          <li style="display: flex; gap: 0.5rem;"><span style="color: #fbbf24;">✓</span> Direct job posting moderation & removal</li>
+        </ul>
+        <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm" style="width: 100%;">Admin Login</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+{% endblock %}

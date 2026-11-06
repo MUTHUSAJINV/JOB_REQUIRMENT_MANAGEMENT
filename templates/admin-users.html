@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}User Management | Admin Console | CareerPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">User Account Management</h1>
+      <p class="page-subtitle">Inspect registered job seekers, recruiters, and platform administrators</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+      Back to Analytics
+    </a>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <form action="{{ url_for('admin_users') }}" method="GET" class="card" style="margin-bottom: 2rem; padding: 1.25rem;">
+    <div style="display: grid; grid-template-columns: 2fr 1.5fr auto; gap: 1rem; align-items: flex-end;">
+      
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Search by Name or Email</label>
+        <input type="text" name="q" value="{{ search_kw }}" class="form-control" placeholder="Search user..." id="admin-user-search">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 0.8rem;">Account Role</label>
+        <select name="role" class="form-control" id="admin-role-select">
+          <option value="">All Account Types</option>
+          <option value="seeker" {% if selected_role == 'seeker' %}selected{% endif %}>Job Seekers</option>
+          <option value="recruiter" {% if selected_role == 'recruiter' %}selected{% endif %}>Recruiters / Employers</option>
+          <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Administrators</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary" style="height: 42px;">Filter Users</button>
+        {% if selected_role or search_kw %}
+          <a href="{{ url_for('admin_users') }}" class="btn btn-secondary" style="height: 42px;">Reset</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Users Table -->
+  {% if users %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Affiliation / Title</th>
+            <th>Activity</th>
+            <th>Registered</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.96rem;">
+                  {{ u.name }}
+                  {% if u.id == session.get('user_id') %}
+                    <span style="font-size: 0.72rem; color: #34d399; font-weight: normal; margin-left: 0.3rem;">(You)</span>
+                  {% endif %}
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">{{ u.email }}</div>
+              </td>
+              <td>
+                <span class="role-tag {{ u.role }}">{{ u.role }}</span>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; color: var(--text-muted); max-width: 250px;">
+                  {{ u.detail_info or 'General Profile' }}
+                </div>
+              </td>
+              <td>
+                {% if u.role == 'recruiter' %}
+                  <span class="badge badge-type">{{ u.activity_count }} Jobs Posted</span>
+                {% elif u.role == 'seeker' %}
+                  <span class="badge badge-applied">{{ u.activity_count }} Applications</span>
+                {% else %}
+                  <span style="font-size: 0.8rem; color: var(--text-subtle);">Admin Access</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.82rem; color: var(--text-subtle);">
+                {{ u.created_at[:10] }}
+              </td>
+              <td style="text-align: right;">
+                {% if u.id != session.get('user_id') %}
+                  <form action="{{ url_for('admin_delete_user', user_id=u.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete user {{ u.name }}? This will remove all their jobs, applications, and profile data.');">
+                    <button type="submit" class="btn btn-danger btn-sm" title="Delete User Account">
+                      Delete Account
+                    </button>
+                  </form>
+                {% else %}
+                  <span style="font-size: 0.8rem; color: var(--text-subtle);">Active Admin</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3.5rem 2rem;">
+      <h3 style="font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.5rem;">No user accounts found</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">No users match your criteria.</p>
+      <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">Reset Filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
